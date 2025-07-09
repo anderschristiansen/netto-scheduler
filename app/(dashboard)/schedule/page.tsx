@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from "date-fns";
 import { DayOfWeek } from "@/lib/types";
+import { useEmployeeStore, useScheduleStore } from "@/lib/store";
+import { getShiftsForDay } from "@/lib/utils/schedule";
 
 const days: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const dayLabels = {
@@ -16,15 +18,16 @@ const dayLabels = {
   sunday: 'Sunday'
 };
 
-const timeSlots = [
-  '07:00-14:00',
-  '10:00-17:00',
-  '14:00-22:00',
-  '16:00-22:00'
-];
-
 export default function SchedulePage() {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const { employees } = useEmployeeStore();
+  const { currentSchedule } = useScheduleStore();
+
+  // Get unique time slots from the current schedule
+  const timeSlots = currentSchedule 
+    ? Array.from(new Set(currentSchedule.shifts.map(shift => `${shift.startTime}-${shift.endTime}`)))
+        .sort()
+    : ['07:00-16:00', '16:00-22:00'];
 
   const goToPreviousWeek = () => setCurrentWeek(subWeeks(currentWeek, 1));
   const goToNextWeek = () => setCurrentWeek(addWeeks(currentWeek, 1));
@@ -86,40 +89,70 @@ export default function SchedulePage() {
           ))}
         </div>
 
-        {timeSlots.map((slot) => (
-          <div key={slot} className="grid grid-cols-8 gap-0 border-t border-gray-200">
-            <div className="p-3 text-sm text-gray-900 bg-gray-50">
-              {slot}
-            </div>
-            {days.map((day) => (
-              <div
-                key={`${day}-${slot}`}
-                className="min-h-[100px] border-l border-gray-200 p-2 hover:bg-gray-50"
-              >
-                <div className="text-xs text-gray-500">
-                  No assignments
-                </div>
+        {timeSlots.map((slot) => {
+          const [startTime, endTime] = slot.split('-');
+          return (
+            <div key={slot} className="grid grid-cols-8 gap-0 border-t border-gray-200">
+              <div className="p-3 text-sm text-gray-900 bg-gray-50">
+                {slot}
               </div>
-            ))}
-          </div>
-        ))}
+              {days.map((day) => {
+                const dayShifts = currentSchedule ? getShiftsForDay(currentSchedule, day) : [];
+                const shift = dayShifts.find(s => s.startTime === startTime && s.endTime === endTime);
+                
+                return (
+                  <div
+                    key={`${day}-${slot}`}
+                    className="min-h-[100px] border-l border-gray-200 p-2 hover:bg-gray-50"
+                  >
+                    {shift && shift.assignedEmployees.length > 0 ? (
+                      <div className="space-y-1">
+                        {shift.assignedEmployees.map(empId => {
+                          const employee = employees.find(e => e.id === empId);
+                          return employee ? (
+                            <div
+                              key={empId}
+                              className={`text-xs rounded px-2 py-1 ${
+                                employee.type === 'leder' 
+                                  ? 'bg-purple-100 text-purple-800' 
+                                  : 'bg-green-100 text-green-800'
+                              }`}
+                            >
+                              {employee.name}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-500">
+                        No assignments
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mt-6 rounded-lg bg-yellow-50 p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-yellow-800">No schedule created</h3>
-            <div className="mt-2 text-sm text-yellow-700">
-              <p>Click "Generate Schedule" to create an AI-optimized schedule for this week.</p>
+      {!currentSchedule && (
+        <div className="mt-6 rounded-lg bg-yellow-50 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">No schedule created</h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>Go to the Planning page to create an AI-optimized schedule for this week.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
