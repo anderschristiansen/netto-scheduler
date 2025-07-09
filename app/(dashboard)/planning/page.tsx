@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, AlertCircle } from "lucide-react";
 import { useEmployeeStore, useScheduleStore, useChatStore, useSettingsStore } from "@/lib/store";
 import { generateScheduleWithAI, convertAIScheduleToSchedule } from "@/lib/utils/openai";
@@ -11,10 +11,15 @@ import { PageTransition, FadeIn } from "@/components/layout/page-transition";
 
 export default function PlanningPage() {
   const [message, setMessage] = useState("");
+  const [isHydrated, setIsHydrated] = useState(false);
   const { employees } = useEmployeeStore();
   const { currentSchedule, setCurrentSchedule } = useScheduleStore();
   const { messages, addMessage, isLoading, setLoading } = useChatStore();
   const { openAIKey, isConfigured } = useSettingsStore();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +98,7 @@ export default function PlanningPage() {
 
         <div className="rounded-lg border border-gray-200 bg-white">
           <div className="h-[600px] overflow-y-auto p-4">
-            {!isConfigured() && (
+            {isHydrated && !isConfigured() && (
               <div className="mb-4 rounded-lg bg-yellow-50 p-4">
                 <div className="flex">
                   <AlertCircle className="h-5 w-5 text-yellow-400" />
