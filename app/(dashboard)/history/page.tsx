@@ -3,6 +3,7 @@
 import { Calendar, Download, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { useScheduleStore } from "@/lib/store";
+import { exportScheduleToJSON } from "@/lib/utils/export-import";
 
 export default function HistoryPage() {
   const { scheduleHistory, currentSchedule, loadFromHistory } = useScheduleStore();
@@ -84,7 +85,11 @@ export default function HistoryPage() {
                     >
                       <Eye className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-900" title="Download schedule">
+                    <button 
+                      onClick={() => exportScheduleToJSON(schedule)}
+                      className="text-gray-600 hover:text-gray-900" 
+                      title="Download schedule"
+                    >
                       <Download className="h-4 w-4" />
                     </button>
                   </td>

@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Download } from "lucide-react";
 import { Employee, EmployeeType } from "@/lib/types";
 import { useEmployeeStore } from "@/lib/store";
+import { QuickAddEmployee } from "@/components/employees/quick-add";
+import { loadSampleEmployees } from "@/lib/utils/sample-data";
+import { exportEmployeesToCSV } from "@/lib/utils/export-import";
 
 export default function EmployeesPage() {
   const { employees, addEmployee, deleteEmployee } = useEmployeeStore();
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const lederCount = employees.filter(emp => emp.type === 'leder').length;
+  const ungarbejderCount = employees.filter(emp => emp.type === 'ungarbejder').length;
+  const totalHours = employees.reduce((sum, emp) => sum + emp.weeklyHours, 0);
 
   return (
     <div>
@@ -18,13 +25,54 @@ export default function EmployeesPage() {
             Manage your store employees and their schedules
           </p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Employee
-        </button>
+        <div className="flex space-x-2">
+          <QuickAddEmployee onAdd={addEmployee} />
+          {employees.length === 0 && (
+            <button
+              onClick={() => loadSampleEmployees(addEmployee)}
+              className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Load Sample Data
+            </button>
+          )}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Employee
+          </button>
+          {employees.length > 0 && (
+            <button
+              onClick={() => exportEmployeesToCSV(employees)}
+              className="inline-flex items-center rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+          <div className="flex items-center">
+            <div className="text-2xl font-bold text-blue-600">{lederCount}</div>
+            <div className="ml-2 text-sm text-gray-600">Ledere</div>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+          <div className="flex items-center">
+            <div className="text-2xl font-bold text-green-600">{ungarbejderCount}</div>
+            <div className="ml-2 text-sm text-gray-600">Ungarbejdere</div>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
+          <div className="flex items-center">
+            <div className="text-2xl font-bold text-purple-600">{totalHours}</div>
+            <div className="ml-2 text-sm text-gray-600">Total Hours/Week</div>
+          </div>
+        </div>
       </div>
 
       <div className="overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">

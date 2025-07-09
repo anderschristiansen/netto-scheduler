@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, RotateCcw } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks } from "date-fns";
 import { DayOfWeek } from "@/lib/types";
 import { useEmployeeStore, useScheduleStore } from "@/lib/store";
 import { getShiftsForDay } from "@/lib/utils/schedule";
+import { validateSchedule } from "@/lib/utils/validation";
+import { ValidationIndicator, ValidationSummary } from "@/components/schedule/validation-indicator";
 
 const days: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const dayLabels = {
@@ -21,7 +23,7 @@ const dayLabels = {
 export default function SchedulePage() {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const { employees } = useEmployeeStore();
-  const { currentSchedule } = useScheduleStore();
+  const { currentSchedule, setCurrentSchedule } = useScheduleStore();
 
   // Get unique time slots from the current schedule
   const timeSlots = currentSchedule 
@@ -29,9 +31,18 @@ export default function SchedulePage() {
         .sort()
     : ['07:00-16:00', '16:00-22:00'];
 
+  // Validate current schedule
+  const validationErrors = currentSchedule ? validateSchedule(currentSchedule, employees) : [];
+
   const goToPreviousWeek = () => setCurrentWeek(subWeeks(currentWeek, 1));
   const goToNextWeek = () => setCurrentWeek(addWeeks(currentWeek, 1));
   const goToCurrentWeek = () => setCurrentWeek(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  
+  const clearSchedule = () => {
+    if (confirm('Are you sure you want to clear the current schedule?')) {
+      setCurrentSchedule(null);
+    }
+  };
 
   return (
     <div>
@@ -65,10 +76,39 @@ export default function SchedulePage() {
           >
             Today
           </button>
+          {currentSchedule && (
+            <ValidationIndicator errors={validationErrors} className="ml-4" />
+          )}
         </div>
-        <button className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          Generate Schedule
-        </button>
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => window.location.href = '/planning'}
+            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Generate Schedule
+          </button>
+          {currentSchedule && (
+            <button 
+              onClick={() => {
+                const { saveToHistory } = useScheduleStore.getState();
+                saveToHistory();
+                alert('Schedule saved to history!');
+              }}
+              className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Save to History
+            </button>
+          )}
+          {currentSchedule && (
+            <button
+              onClick={clearSchedule}
+              className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear Schedule
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -153,6 +193,8 @@ export default function SchedulePage() {
           </div>
         </div>
       )}
+      
+      {currentSchedule && <ValidationSummary errors={validationErrors} />}
     </div>
   );
 }
