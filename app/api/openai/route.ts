@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { Employee, Schedule, ScheduledShift } from '@/lib/types';
+import { Employee, Schedule } from '@/lib/types';
 import { generateEmptySchedule } from '@/lib/utils/schedule';
 import { validateSchedule } from '@/lib/utils/validation';
-import { 
-  WEEKDAY_SHIFT_RULES, 
-  WEEKEND_SHIFT_RULES, 
-  WEEKDAYS, 
-  WEEKEND_DAYS 
-} from '@/data/rules/shiftRules';
 
 const SYSTEM_PROMPT = `You are an AI assistant that helps create optimal shift schedules for a Danish Netto store. 
 
@@ -89,7 +83,7 @@ Please create or modify the schedule according to the request and store rules.
     let parsedResponse;
     try {
       parsedResponse = JSON.parse(aiResponse);
-    } catch (error) {
+    } catch {
       // If JSON parsing fails, return the raw response
       return NextResponse.json({
         message: aiResponse,
@@ -99,7 +93,7 @@ Please create or modify the schedule according to the request and store rules.
 
     // Validate the proposed schedule if provided
     if (parsedResponse.schedule) {
-      const proposedSchedule = createScheduleFromAI(parsedResponse.schedule, employees);
+      const proposedSchedule = createScheduleFromAI(parsedResponse.schedule);
       const validationErrors = validateSchedule(proposedSchedule, employees);
       
       if (validationErrors.length > 0) {
@@ -119,12 +113,12 @@ Please create or modify the schedule according to the request and store rules.
   }
 }
 
-function createScheduleFromAI(aiSchedule: any, employees: Employee[]): Schedule {
+function createScheduleFromAI(aiSchedule: { shifts?: { day: string; startTime: string; endTime: string; assignedEmployees?: string[] }[] }): Schedule {
   const baseSchedule = generateEmptySchedule(new Date());
   
   // Map AI response to our schedule format
   const updatedShifts = baseSchedule.shifts.map(shift => {
-    const aiShift = aiSchedule.shifts?.find((s: any) => 
+    const aiShift = aiSchedule.shifts?.find((s: { day: string; startTime: string; endTime: string; assignedEmployees?: string[] }) => 
       s.day === shift.day && s.startTime === shift.startTime && s.endTime === shift.endTime
     );
     

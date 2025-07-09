@@ -115,7 +115,7 @@ export default function EmployeesPage() {
                   <div className="text-gray-500">
                     <p className="text-sm">No employees added yet</p>
                     <p className="mt-1 text-sm">
-                      Click "Add Employee" to get started
+                      Click &quot;Add Employee&quot; to get started
                     </p>
                   </div>
                 </td>

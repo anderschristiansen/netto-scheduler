@@ -1,6 +1,6 @@
 import { Employee, Schedule, ScheduledShift, ValidationError } from '@/lib/types';
 import { MINIMUM_STAFF_REQUIREMENTS, MINIMUM_REST_HOURS } from '@/data/rules/shiftRules';
-import { differenceInHours, parseISO, startOfDay, addHours } from 'date-fns';
+import { differenceInHours, startOfDay, addHours } from 'date-fns';
 
 export function validateSchedule(schedule: Schedule, employees: Employee[]): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -114,7 +114,7 @@ function validateDoubleBooking(
   employeeShifts: Map<string, ScheduledShift[]>,
   errors: ValidationError[]
 ): void {
-  employeeShifts.forEach((shifts, empId) => {
+  employeeShifts.forEach((shifts) => {
     for (let i = 0; i < shifts.length; i++) {
       for (let j = i + 1; j < shifts.length; j++) {
         if (shiftsOverlap(shifts[i], shifts[j])) {

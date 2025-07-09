@@ -73,7 +73,7 @@ export default function PlanningPage() {
         setCurrentSchedule(newSchedule);
       }
 
-    } catch (error) {
+    } catch {
       addMessage({
         role: "system",
         content: "Sorry, I encountered an error. Please try again."
@@ -116,7 +116,7 @@ export default function PlanningPage() {
                 <div className="text-center">
                   <p className="text-gray-500">Start a conversation to plan schedules</p>
                   <p className="mt-2 text-sm text-gray-400">
-                    Try: "Create a schedule for next week" or "Add John to Monday morning shift"
+                    Try: &quot;Create a schedule for next week&quot; or &quot;Add John to Monday morning shift&quot;
                   </p>
                 </div>
               </div>
