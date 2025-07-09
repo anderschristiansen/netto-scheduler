@@ -6,6 +6,8 @@ import { useEmployeeStore, useScheduleStore, useChatStore, useSettingsStore } fr
 import { generateScheduleWithAI, convertAIScheduleToSchedule } from "@/lib/utils/openai";
 import { generateEmptySchedule } from "@/lib/utils/schedule";
 import { startOfWeek } from "date-fns";
+import { LoadingDots } from "@/components/ui/loading-spinner";
+import { PageTransition, FadeIn } from "@/components/layout/page-transition";
 
 export default function PlanningPage() {
   const [message, setMessage] = useState("");
@@ -77,14 +79,17 @@ export default function PlanningPage() {
   };
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 pr-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Planning Assistant</h1>
-          <p className="mt-2 text-gray-600">
-            Chat with AI to create and modify schedules
-          </p>
-        </div>
+    <PageTransition>
+      <div className="flex h-full flex-col lg:flex-row">
+        <div className="flex-1 lg:pr-8">
+          <FadeIn>
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">Planning Assistant</h1>
+              <p className="mt-2 text-gray-600">
+                Chat with AI to create and modify schedules
+              </p>
+            </div>
+          </FadeIn>
 
         <div className="rounded-lg border border-gray-200 bg-white">
           <div className="h-[600px] overflow-y-auto p-4">
@@ -134,7 +139,8 @@ export default function PlanningPage() {
                   <div className="flex justify-start">
                     <div className="bg-gray-100 rounded-lg px-4 py-2">
                       <div className="flex items-center space-x-2">
-                        <div className="animate-pulse">Thinking...</div>
+                        <LoadingDots />
+                        <span className="text-sm text-gray-600">AI is thinking...</span>
                       </div>
                     </div>
                   </div>
@@ -163,44 +169,47 @@ export default function PlanningPage() {
             </div>
           </form>
         </div>
-      </div>
+        </div>
 
-      <div className="w-96 rounded-lg border border-gray-200 bg-white p-4">
-        <h2 className="mb-4 text-lg font-semibold">Current Schedule</h2>
-        {currentSchedule ? (
-          <div className="space-y-3">
-            <div className="text-sm text-gray-600">
-              Week of {currentSchedule.weekStart.toLocaleDateString()}
-            </div>
-            {currentSchedule.shifts
-              .filter(shift => shift.assignedEmployees.length > 0)
-              .slice(0, 8)
-              .map((shift) => (
-                <div key={shift.id} className="border-b border-gray-100 pb-2">
-                  <div className="text-sm font-medium capitalize">
-                    {shift.day} {shift.startTime}-{shift.endTime}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {shift.assignedEmployees.map(empId => {
-                      const employee = employees.find(e => e.id === empId);
-                      return employee ? employee.name : empId;
-                    }).join(', ')}
-                  </div>
+        <div className="w-full lg:w-96 mt-6 lg:mt-0 rounded-lg border border-gray-200 bg-white p-4">
+          <FadeIn delay={0.2}>
+            <h2 className="mb-4 text-lg font-semibold">Current Schedule</h2>
+            {currentSchedule ? (
+              <div className="space-y-3">
+                <div className="text-sm text-gray-600">
+                  Week of {currentSchedule.weekStart.toLocaleDateString()}
                 </div>
-              ))}
-            {currentSchedule.shifts.filter(shift => shift.assignedEmployees.length > 0).length > 8 && (
-              <div className="text-xs text-gray-500">
-                +{currentSchedule.shifts.filter(shift => shift.assignedEmployees.length > 0).length - 8} more shifts
+                {currentSchedule.shifts
+                  .filter(shift => shift.assignedEmployees.length > 0)
+                  .slice(0, 8)
+                  .map((shift) => (
+                    <div key={shift.id} className="border-b border-gray-100 pb-2">
+                      <div className="text-sm font-medium capitalize">
+                        {shift.day} {shift.startTime}-{shift.endTime}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {shift.assignedEmployees.map(empId => {
+                          const employee = employees.find(e => e.id === empId);
+                          return employee ? employee.name : empId;
+                        }).join(', ')}
+                      </div>
+                    </div>
+                  ))}
+                {currentSchedule.shifts.filter(shift => shift.assignedEmployees.length > 0).length > 8 && (
+                  <div className="text-xs text-gray-500">
+                    +{currentSchedule.shifts.filter(shift => shift.assignedEmployees.length > 0).length - 8} more shifts
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500">
+                <p>No active schedule</p>
+                <p className="mt-2 text-sm">Generate a schedule to see it here</p>
               </div>
             )}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500">
-            <p>No active schedule</p>
-            <p className="mt-2 text-sm">Generate a schedule to see it here</p>
-          </div>
-        )}
+          </FadeIn>
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

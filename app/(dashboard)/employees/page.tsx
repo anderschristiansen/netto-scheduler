@@ -7,6 +7,7 @@ import { useEmployeeStore } from "@/lib/store";
 import { QuickAddEmployee } from "@/components/employees/quick-add";
 import { loadSampleEmployees } from "@/lib/utils/sample-data";
 import { exportEmployeesToCSV } from "@/lib/utils/export-import";
+import { PageTransition, FadeIn, SlideIn } from "@/components/layout/page-transition";
 
 export default function EmployeesPage() {
   const { employees, addEmployee, deleteEmployee } = useEmployeeStore();
@@ -17,66 +18,77 @@ export default function EmployeesPage() {
   const totalHours = employees.reduce((sum, emp) => sum + emp.weeklyHours, 0);
 
   return (
-    <div>
+    <PageTransition>
       <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
-          <p className="mt-2 text-gray-600">
-            Manage your store employees and their schedules
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <QuickAddEmployee onAdd={addEmployee} />
-          {employees.length === 0 && (
+        <FadeIn>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
+            <p className="mt-2 text-gray-600">
+              Manage your store employees and their schedules
+            </p>
+          </div>
+        </FadeIn>
+        <SlideIn direction="right">
+          <div className="flex space-x-2">
+            <QuickAddEmployee onAdd={addEmployee} />
+            {employees.length === 0 && (
+              <button
+                onClick={() => loadSampleEmployees(addEmployee)}
+                className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+              >
+                Load Sample Data
+              </button>
+            )}
             <button
-              onClick={() => loadSampleEmployees(addEmployee)}
-              className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
             >
-              Load Sample Data
+              <Plus className="mr-2 h-4 w-4" />
+              Add Employee
             </button>
-          )}
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Employee
-          </button>
-          {employees.length > 0 && (
-            <button
-              onClick={() => exportEmployeesToCSV(employees)}
-              className="inline-flex items-center rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </button>
-          )}
-        </div>
+            {employees.length > 0 && (
+              <button
+                onClick={() => exportEmployeesToCSV(employees)}
+                className="inline-flex items-center rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </button>
+            )}
+          </div>
+        </SlideIn>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
-          <div className="flex items-center">
-            <div className="text-2xl font-bold text-blue-600">{lederCount}</div>
-            <div className="ml-2 text-sm text-gray-600">Ledere</div>
+        <SlideIn delay={0.1}>
+          <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center">
+              <div className="text-2xl font-bold text-blue-600">{lederCount}</div>
+              <div className="ml-2 text-sm text-gray-600">Ledere</div>
+            </div>
           </div>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
-          <div className="flex items-center">
-            <div className="text-2xl font-bold text-green-600">{ungarbejderCount}</div>
-            <div className="ml-2 text-sm text-gray-600">Ungarbejdere</div>
+        </SlideIn>
+        <SlideIn delay={0.2}>
+          <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center">
+              <div className="text-2xl font-bold text-green-600">{ungarbejderCount}</div>
+              <div className="ml-2 text-sm text-gray-600">Ungarbejdere</div>
+            </div>
           </div>
-        </div>
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5">
-          <div className="flex items-center">
-            <div className="text-2xl font-bold text-purple-600">{totalHours}</div>
-            <div className="ml-2 text-sm text-gray-600">Total Hours/Week</div>
+        </SlideIn>
+        <SlideIn delay={0.3}>
+          <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-900/5 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center">
+              <div className="text-2xl font-bold text-purple-600">{totalHours}</div>
+              <div className="ml-2 text-sm text-gray-600">Total Hours/Week</div>
+            </div>
           </div>
-        </div>
+        </SlideIn>
       </div>
 
-      <div className="overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
-        <table className="min-w-full divide-y divide-gray-300">
+      <FadeIn delay={0.4}>
+        <div className="overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+          <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-50">
             <tr>
               <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
@@ -110,7 +122,7 @@ export default function EmployeesPage() {
               </tr>
             ) : (
               employees.map((employee) => (
-                <tr key={employee.id}>
+                <tr key={employee.id} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                     {employee.name}
                   </td>
@@ -148,6 +160,7 @@ export default function EmployeesPage() {
           </tbody>
         </table>
       </div>
+      </FadeIn>
 
       {showAddModal && (
         <AddEmployeeModal 
@@ -155,7 +168,7 @@ export default function EmployeesPage() {
           onAdd={addEmployee}
         />
       )}
-    </div>
+    </PageTransition>
   );
 }
 
