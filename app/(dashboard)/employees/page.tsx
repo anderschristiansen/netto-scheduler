@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
 import { Employee, EmployeeType } from "@/lib/types";
+import { useEmployeeStore } from "@/lib/store";
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { employees, addEmployee, deleteEmployee } = useEmployeeStore();
   const [showAddModal, setShowAddModal] = useState(false);
 
   return (
@@ -86,7 +87,10 @@ export default function EmployeesPage() {
                     <button className="text-blue-600 hover:text-blue-900 mr-4">
                       <Edit2 className="h-4 w-4" />
                     </button>
-                    <button className="text-red-600 hover:text-red-900">
+                    <button 
+                      onClick={() => deleteEmployee(employee.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </td>
@@ -98,24 +102,54 @@ export default function EmployeesPage() {
       </div>
 
       {showAddModal && (
-        <AddEmployeeModal onClose={() => setShowAddModal(false)} />
+        <AddEmployeeModal 
+          onClose={() => setShowAddModal(false)} 
+          onAdd={addEmployee}
+        />
       )}
     </div>
   );
 }
 
-function AddEmployeeModal({ onClose }: { onClose: () => void }) {
+function AddEmployeeModal({ 
+  onClose, 
+  onAdd 
+}: { 
+  onClose: () => void; 
+  onAdd: (employee: Omit<Employee, 'id'>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    name: '',
+    age: '',
+    type: 'ungarbejder' as EmployeeType,
+    weeklyHours: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.age || !formData.weeklyHours) return;
+
+    onAdd({
+      name: formData.name,
+      age: parseInt(formData.age),
+      type: formData.type,
+      weeklyHours: parseInt(formData.weeklyHours)
+    });
+
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
         
         <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-          <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-            <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-4">
-              Add New Employee
-            </h3>
-            <form>
+          <form onSubmit={handleSubmit}>
+            <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-4">
+                Add New Employee
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -124,7 +158,10 @@ function AddEmployeeModal({ onClose }: { onClose: () => void }) {
                   <input
                     type="text"
                     id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    required
                   />
                 </div>
                 
@@ -135,7 +172,12 @@ function AddEmployeeModal({ onClose }: { onClose: () => void }) {
                   <input
                     type="number"
                     id="age"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    required
+                    min="14"
+                    max="70"
                   />
                 </div>
                 
@@ -145,6 +187,8 @@ function AddEmployeeModal({ onClose }: { onClose: () => void }) {
                   </label>
                   <select
                     id="type"
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as EmployeeType })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   >
                     <option value="ungarbejder">Ungarbejder (Under 18)</option>
@@ -159,28 +203,33 @@ function AddEmployeeModal({ onClose }: { onClose: () => void }) {
                   <input
                     type="number"
                     id="hours"
+                    value={formData.weeklyHours}
+                    onChange={(e) => setFormData({ ...formData, weeklyHours: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    required
+                    min="1"
+                    max="40"
                   />
                 </div>
               </div>
-            </form>
-          </div>
-          
-          <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-            <button
-              type="button"
-              className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
-            >
-              Add Employee
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-            >
-              Cancel
-            </button>
-          </div>
+            </div>
+            
+            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <button
+                type="submit"
+                className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+              >
+                Add Employee
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

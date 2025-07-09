@@ -1,4 +1,15 @@
+"use client";
+
+import { useEmployeeStore, useScheduleStore } from "@/lib/store";
+
 export default function DashboardPage() {
+  const { employees } = useEmployeeStore();
+  const { currentSchedule } = useScheduleStore();
+
+  const totalShifts = currentSchedule?.shifts.length || 0;
+  const filledShifts = currentSchedule?.shifts.filter(shift => shift.assignedEmployees.length > 0).length || 0;
+  const fillPercentage = totalShifts > 0 ? Math.round((filledShifts / totalShifts) * 100) : 0;
+
   return (
     <div>
       <div className="mb-8">
@@ -32,7 +43,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     Total Employees
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">0</dd>
+                  <dd className="text-lg font-semibold text-gray-900">{employees.length}</dd>
                 </dl>
               </div>
             </div>
@@ -62,7 +73,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     This Week&apos;s Shifts
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">0</dd>
+                  <dd className="text-lg font-semibold text-gray-900">{totalShifts}</dd>
                 </dl>
               </div>
             </div>
@@ -92,7 +103,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     Shifts Filled
                   </dt>
-                  <dd className="text-lg font-semibold text-gray-900">0%</dd>
+                  <dd className="text-lg font-semibold text-gray-900">{fillPercentage}%</dd>
                 </dl>
               </div>
             </div>

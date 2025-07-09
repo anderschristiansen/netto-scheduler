@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useSettingsStore } from "@/lib/store";
 
 export default function SettingsPage() {
-  const [storeHours, setStoreHours] = useState({
-    open: "07:00",
-    close: "22:00",
-  });
+  const { storeHours, openAIKey, setStoreHours, setOpenAIKey } = useSettingsStore();
+  const [localApiKey, setLocalApiKey] = useState(openAIKey);
+  
+  const handleSaveSettings = () => {
+    setOpenAIKey(localApiKey);
+    alert("Settings saved successfully!");
+  };
 
   return (
     <div>
@@ -104,6 +108,8 @@ export default function SettingsPage() {
                 type="password"
                 id="api-key"
                 placeholder="sk-..."
+                value={localApiKey}
+                onChange={(e) => setLocalApiKey(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
               <p className="mt-2 text-sm text-gray-500">
@@ -114,7 +120,10 @@ export default function SettingsPage() {
         </div>
 
         <div className="flex justify-end">
-          <button className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <button 
+            onClick={handleSaveSettings}
+            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
             Save Settings
           </button>
         </div>

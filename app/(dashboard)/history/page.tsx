@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { Calendar, Download, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useScheduleStore } from "@/lib/store";
 
 export default function HistoryPage() {
-  const [schedules] = useState<Array<{
-    id: string;
-    weekStart: Date;
-    version: number;
-    createdAt: Date;
-    status: "active" | "archived";
-  }>>([]);
+  const { scheduleHistory, currentSchedule, loadFromHistory } = useScheduleStore();
+  
+  const allSchedules = scheduleHistory.map(schedule => ({
+    ...schedule,
+    status: currentSchedule?.id === schedule.id ? "active" as const : "archived" as const
+  }));
 
   return (
     <div>
@@ -23,7 +22,7 @@ export default function HistoryPage() {
       </div>
 
       <div className="overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
-        {schedules.length === 0 ? (
+        {allSchedules.length === 0 ? (
           <div className="py-12 text-center">
             <Calendar className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-semibold text-gray-900">
@@ -55,7 +54,7 @@ export default function HistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {schedules.map((schedule) => (
+              {allSchedules.map((schedule) => (
                 <tr key={schedule.id}>
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                     Week of {format(schedule.weekStart, "MMM d, yyyy")}
@@ -78,10 +77,14 @@ export default function HistoryPage() {
                     </span>
                   </td>
                   <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <button className="text-blue-600 hover:text-blue-900 mr-4">
+                    <button 
+                      onClick={() => loadFromHistory(schedule.id)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      title="Load schedule"
+                    >
                       <Eye className="h-4 w-4" />
                     </button>
-                    <button className="text-gray-600 hover:text-gray-900">
+                    <button className="text-gray-600 hover:text-gray-900" title="Download schedule">
                       <Download className="h-4 w-4" />
                     </button>
                   </td>
